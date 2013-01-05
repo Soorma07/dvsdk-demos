@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Script to create SD card for DM368 plaform.
 #
 # Author: Brijesh Singh, Texas Instruments Inc.
@@ -89,7 +89,7 @@ echo "*         Press <ENTER> to confirm....                     *"
 echo "************************************************************"
 read junk
 
-for i in `ls -1 $device?`; do
+for i in `ls -1 ${device}p?`; do
  echo "unmounting device '$i'"
  umount $i 2>/dev/null
 done
@@ -130,13 +130,15 @@ if [ $? -ne 0 ]; then
     exit 1;
 fi
 
-echo "Formating ${device}1 ..."
-execute "mkfs.vfat -F 32 -n "BOOT" ${device}1"
-echo "Formating ${device}2 ..."
-execute "mke2fs -j -L "ROOTFS" ${device}2"
+echo "Formating ${device}p1 ..."
+execute "mkfs.vfat -F 32 -n "BOOT" ${device}p1"
+echo "Formating ${device}p2 ..."
+execute "mke2fs -j -L "ROOTFS" ${device}p2"
 if [ "$copy" != "" ]; then
-  echo "Formating ${device}3 ..."
-  execute "mke2fs -j -L "START_HERE" ${device}3"
+  echo "NO COPYING!"
+  exit 1
+  #echo "Formating ${device}3 ..."
+  #execute "mke2fs -j -L "START_HERE" ${device}3"
 fi
 
 # creating boot.scr
@@ -157,9 +159,9 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "Copying uImage/boot.scr on ${device}1"
+echo "Copying uImage/boot.scr on ${device}p1"
 execute "mkdir -p /tmp/sdk/$$"
-execute "mount ${device}1 /tmp/sdk/$$"
+execute "mount ${device}p1 /tmp/sdk/$$"
 execute "cp /tmp/sdk/boot.scr /tmp/sdk/$$/"
 execute "cp /tmp/sdk/boot.cmd /tmp/sdk/$$/"
 execute "cp $sdkdir/psp/prebuilt-images/uImage*.bin /tmp/sdk/$$/uImage"
@@ -184,9 +186,9 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "Extracting filesystem on ${device}2 ..."
+echo "Extracting filesystem on ${device}p2 ..."
 execute "mkdir -p /tmp/sdk/$$"
-execute "mount ${device}2 /tmp/sdk/$$"
+execute "mount ${device}p2 /tmp/sdk/$$"
 execute "tar zxf $sdkdir/filesystem/dvsdk-dm368-evm-rootfs.tar.gz -C /tmp/sdk/$$"
 
 # check if we need to create symbolic link for matrix 
@@ -202,7 +204,7 @@ if [ -f /tmp/sdk/$$/etc/init.d/matrix-gui-e ]; then
 fi
 
 sync
-echo "unmounting ${device}2"
+echo "unmounting ${device}p2"
 execute "umount /tmp/sdk/$$"
 
 if [ "$copy" != "" ]; then
