@@ -88,12 +88,12 @@ Void CapBuf_blackFill(Buffer_Handle hBuf, int entire)
 
             BufferGfx_getDimensions(hBuf, &dim);
             offset = dim.y * dim.lineLength + dim.x * bpp / 8;
-            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
+            for (y = (entire ? 0 : dim.height/4); y < (entire ? dim.height : (3 * dim.height) / 4); y++) {
                 memset(yPtr + offset, 0x0, dim.width * bpp / 8);
                 yPtr += dim.lineLength;
             }
 
-            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
+            for (y = (entire ? 0 : dim.height/4); y < (entire ? dim.height : (3 * dim.height) / 4); y++) {
                 memset(cbcrPtr + offset, 0x80, dim.width * bpp / 8);
                 cbcrPtr += dim.lineLength;
             }
@@ -112,13 +112,13 @@ Void CapBuf_blackFill(Buffer_Handle hBuf, int entire)
 
             BufferGfx_getDimensions(hBuf, &dim);
             yPtr += dim.y * dim.lineLength + dim.x * bpp / 8;
-            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
+            for (y = (entire ? 0 : dim.height/4); y < (entire ? dim.height : (3 * dim.height) / 4); y++) {
                 memset(yPtr, 0x0, dim.width * bpp / 8);
                 yPtr += dim.lineLength;
             }
 
             cbcrPtr += dim.y * dim.lineLength / 2 + dim.x * bpp / 8;
-            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
+            for (y = (entire ? 0 : dim.height/4); y < (entire ? dim.height : (3 * dim.height) / 4); y++) {
                 memset(cbcrPtr, 0x80, dim.width * bpp / 8);
                 cbcrPtr += dim.lineLength;
             }
