@@ -71,9 +71,9 @@
  * CapBuf_blackFill
  * Note: This function uses x, y parameters to calculate the offset for the
  * buffers.
- ******************************************************************************/
+ *);*****************************************************************************/
 
-Void CapBuf_blackFill(Buffer_Handle hBuf)
+Void CapBuf_blackFill(Buffer_Handle hBuf, int entire)
 {
     switch (BufferGfx_getColorSpace(hBuf)) {
         case ColorSpace_YUV422PSEMI:
@@ -88,12 +88,12 @@ Void CapBuf_blackFill(Buffer_Handle hBuf)
 
             BufferGfx_getDimensions(hBuf, &dim);
             offset = dim.y * dim.lineLength + dim.x * bpp / 8;
-            for (y = 0; y < dim.height; y++) {
+            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
                 memset(yPtr + offset, 0x0, dim.width * bpp / 8);
                 yPtr += dim.lineLength;
             }
 
-            for (y = 0; y < dim.height; y++) {
+            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
                 memset(cbcrPtr + offset, 0x80, dim.width * bpp / 8);
                 cbcrPtr += dim.lineLength;
             }
@@ -112,13 +112,13 @@ Void CapBuf_blackFill(Buffer_Handle hBuf)
 
             BufferGfx_getDimensions(hBuf, &dim);
             yPtr += dim.y * dim.lineLength + dim.x * bpp / 8;
-            for (y = 0; y < dim.height; y++) {
+            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
                 memset(yPtr, 0x0, dim.width * bpp / 8);
                 yPtr += dim.lineLength;
             }
 
             cbcrPtr += dim.y * dim.lineLength / 2 + dim.x * bpp / 8;
-            for (y = 0; y < dim.height / 2; y++) {
+            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
                 memset(cbcrPtr, 0x80, dim.width * bpp / 8);
                 cbcrPtr += dim.lineLength;
             }
@@ -139,7 +139,7 @@ Void CapBuf_blackFill(Buffer_Handle hBuf)
             /* Make sure display buffer is 4-byte aligned */
             assert((((UInt32) bufPtr) & 0x3) == 0);
 
-            for (i = 0; i < dim.height; i++) {
+            for (i = (entire ? 0 : dim.height/4); i < (entire ? dim.height : (3 * dim.height) / 4); i++) {
                 for (j = 0; j < dim.width / 2; j++) {
                     bufPtr[j] = UYVY_BLACK;
                 }
@@ -151,14 +151,19 @@ Void CapBuf_blackFill(Buffer_Handle hBuf)
 
         case ColorSpace_RGB565:
         {
-            memset(Buffer_getUserPtr(hBuf), 0, Buffer_getSize(hBuf));
+            int n = Buffer_getSize(hBuf);
+            if (entire)
+                memset(Buffer_getUserPtr(hBuf), 0, n);
+            else {
+                memset(Buffer_getUserPtr(hBuf), n/4, (3*n)/4);
+            }
             break;
         }
 
         default:
         {
-                ERR("Unsupported color space (%d) for _Dmai_blackFill\n",
-                BufferGfx_getColorSpace(hBuf));
+            ERR("Unsupported color space (%d) for _Dmai_blackFill\n",
+            BufferGfx_getColorSpace(hBuf));
             break;
         }
     }
@@ -350,7 +355,7 @@ Void *captureThrFxn(Void *arg)
         }
 
        /* Fill with black the buffer */
-       CapBuf_blackFill(hBuf);
+       CapBuf_blackFill(hBuf, 1);
 
         /* Send buffer to video thread for encoding */
         if (Fifo_put(envp->hOutFifo, hBuf) < 0) {
@@ -370,6 +375,9 @@ Void *captureThrFxn(Void *arg)
             ERR("Failed to get capture buffer\n");
             cleanup(THREAD_FAILURE);
         }
+
+        /* Set a portion of the frame to black to verify we understand video */
+        CapBuf_blackFill(hBuf, 1);
 
         /* Get a buffer from the display device */
         if ((!envp->previewDisabled) && (Display_get(hDisplay, &hDisBuf) < 0)) {
