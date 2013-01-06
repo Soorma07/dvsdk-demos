@@ -226,6 +226,10 @@ Void *videoThrFxn(Void *arg)
         /* Get a buffer to encode from the capture thread */
         fifoRet = Fifo_get(envp->hCaptureOutFifo, &hCapBuf);
 
+        /* Set a portion of the frame to black to verify we understand video */
+        extern Void CapBuf_blackFill(Buffer_Handle hBuf, int entire);
+        CapBuf_blackFill(hCapBuf, 0);
+
         if (fifoRet < 0) {
             ERR("Failed to get buffer from video thread\n");
             cleanup(THREAD_FAILURE);

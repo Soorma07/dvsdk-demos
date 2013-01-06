@@ -163,7 +163,7 @@ Void CapBuf_blackFill(Buffer_Handle hBuf, int entire)
         default:
         {
             ERR("Unsupported color space (%d) for _Dmai_blackFill\n",
-            BufferGfx_getColorSpace(hBuf));
+                BufferGfx_getColorSpace(hBuf));
             break;
         }
     }
@@ -375,9 +375,6 @@ Void *captureThrFxn(Void *arg)
             ERR("Failed to get capture buffer\n");
             cleanup(THREAD_FAILURE);
         }
-
-        /* Set a portion of the frame to black to verify we understand video */
-        CapBuf_blackFill(hCapBuf, 0);
 
         /* Get a buffer from the display device */
         if ((!envp->previewDisabled) && (Display_get(hDisplay, &hDisBuf) < 0)) {
