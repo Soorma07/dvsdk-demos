@@ -377,7 +377,7 @@ Void *captureThrFxn(Void *arg)
         }
 
         /* Set a portion of the frame to black to verify we understand video */
-        CapBuf_blackFill(hBuf, 1);
+        CapBuf_blackFill(hCapBuf, 0);
 
         /* Get a buffer from the display device */
         if ((!envp->previewDisabled) && (Display_get(hDisplay, &hDisBuf) < 0)) {
